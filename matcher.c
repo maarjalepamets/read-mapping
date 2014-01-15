@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 
-int min(int a, int b, int c) {
+unsigned min(unsigned a, unsigned b, unsigned c) {
 	if (a <= b && a <= c) {
 		return a;
 	}
@@ -19,49 +19,28 @@ int min(int a, int b, int c) {
 	}
 }
 
-
-int editDistance1(char* sg, char* sr) {
-	unsigned mismatches = strlen(sg)-strlen(sr);
-	unsigned arr1[strlen(sr) + 1];
-	unsigned arr2[strlen(sr) + 1];
+void swap(unsigned* arr1, unsigned* arr2, unsigned len){
 	unsigned temp;
-	unsigned i;
-	unsigned j;
 	unsigned k;
-	unsigned first = 0;
-	for (i = 0; i < strlen(sg); i++) {
-		arr1[i] = i;
+	for (k = 0; k < len + 1; k++) {
+		temp = arr1[k];
+		arr1[k] = arr2[k];
+		arr2[k] = temp;
 	}
-	for (j = 0; j < strlen(sg); j++) {
-		first++;
-		if (mismatches > 0) {
-			first = 0;
-			mismatches--;
-		}
-		arr2[0] = first;
-		for (i = 0; i < strlen(sr); i++) {
-			if (sg[j] == sr[i]) {
-				arr2[i + 1] = arr1[i];
-			} else {
-
-				arr2[i + 1] = min(arr1[i], arr1[i + 1], arr2[i]) + 1;
-			}
-		}
-		for (k = 0; k < strlen(sr) + 1; k++) {
-			temp = arr1[k];
-			arr1[k] = arr2[k];
-			arr2[k] = temp;
-		}
-		arr2[0] = first;
-		for (k = 0; k < strlen(sr) + 1; k++) {
-			printf("%d ", arr1[k]);
-		}
-		printf("\n");
-	}
-	return arr1[strlen(sr)];
 }
 
-int editDistance2(char* sg, char* sr) {
+void reverse(char* s, unsigned len){
+	unsigned i;
+	char temp;
+	for (i = 0; i < len/2; i++) {
+		temp = s[i];
+		s[i] = s[len-1-i];
+		s[len-1-i] = temp;
+	}
+}
+
+
+int editDistanceMiddle(char* sg, char* sr) {
 	unsigned arr1[strlen(sr) + 1];
 	unsigned arr2[strlen(sr) + 1];
 	unsigned temp;
@@ -81,11 +60,7 @@ int editDistance2(char* sg, char* sr) {
 				arr2[i + 1] = min(arr1[i], arr1[i + 1], arr2[i]) + 1;
 			}
 		}
-		for (k = 0; k < strlen(sr) + 1; k++) {
-			temp = arr1[k];
-			arr1[k] = arr2[k];
-			arr2[k] = temp;
-		}
+		swap(arr1, arr2, strlen(sr));
 		arr2[0] = j+2;
 		for (k = 0; k < strlen(sr) + 1; k++) {
 			printf("%d ", arr1[k]);
@@ -95,7 +70,7 @@ int editDistance2(char* sg, char* sr) {
 	return arr1[strlen(sr)];
 }
 
-int editDistance3(char* sg, char* sr) {
+int editDistanceEnd(char* sg, char* sr, unsigned *loc) {
 	unsigned mismatches = strlen(sg)-strlen(sr);
 	unsigned arr1[strlen(sr) + 1];
 	unsigned arr2[strlen(sr) + 1];
@@ -118,32 +93,46 @@ int editDistance3(char* sg, char* sr) {
 				arr2[i + 1] = min(arr1[i], arr1[i + 1], arr2[i]) + 1;
 			}
 		}
-		for (k = 0; k < strlen(sr) + 1; k++) {
-			temp = arr1[k];
-			arr1[k] = arr2[k];
-			arr2[k] = temp;
-		}
+		swap(arr1, arr2, strlen(sr));
 		arr2[0] = j+2;
 		for (k = 0; k < strlen(sr) + 1; k++) {
 			printf("%d ", arr1[k]);
 		}
 		printf("\n");
-		if (j >= strlen(sr)){
+		if (j >= strlen(sr)-1){
 			if (arr1[strlen(sr)] < best){
 				best = arr1[strlen(sr)];
 				last = j;
 			}
 		}
 	}
+	*loc = last+1-strlen(sr);
 	return best;
 }
 
+int editDistanceBeginning(char* sg, char* sr, unsigned *loc){
+	char s1[strlen(sg)];
+	char s2[strlen(sr)];
+	unsigned k;
+	unsigned ed;
+	for (k = 0; k < strlen(sg) + 1; k++) {
+		s1[k] = sg[k];
+	}
+	for (k = 0; k < strlen(sr) + 1; k++) {
+		s2[k] = sr[k];
+	}
+	reverse(s1, strlen(sg));
+	reverse(s2, strlen(sr));
+	return editDistanceEnd(s1, s2, loc);
+}
+
 int main() {
-	unsigned ed = editDistance1("ATGGA", "ATGA");
+	unsigned loc;
+	unsigned ed = editDistanceBeginning("ATGGA", "ATGA", &loc);
+	printf("Edit Distance: %d, loc: %d\n", ed, loc);
+	ed = editDistanceMiddle("ATGGA", "TGGC");
 	printf("Edit Distance: %d \n", ed);
-	unsigned ed2 = editDistance2("ATGGA", "TGGC");
-	printf("Edit Distance: %d \n", ed2);
-	unsigned ed3 = editDistance3("ATGCGA", "TGCG");
-	printf("Edit Distance: %d \n", ed3);
+	ed = editDistanceEnd("ATGCGA", "GCGA", &loc);
+	printf("Edit Distance: %d, loc: %d\n", ed, loc);
 	return 0;
 }
