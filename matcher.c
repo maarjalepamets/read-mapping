@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define debug 0
+
 unsigned min(unsigned a, unsigned b, unsigned c) {
 	if (a <= b && a <= c) {
 		return a;
@@ -43,7 +45,6 @@ void reverse(char* s, unsigned len){
 int editDistanceMiddle(char* sg, char* sr) {
 	unsigned arr1[strlen(sr) + 1];
 	unsigned arr2[strlen(sr) + 1];
-	unsigned temp;
 	unsigned i;
 	unsigned j;
 	unsigned k;
@@ -62,19 +63,19 @@ int editDistanceMiddle(char* sg, char* sr) {
 		}
 		swap(arr1, arr2, strlen(sr));
 		arr2[0] = j+2;
-		for (k = 0; k < strlen(sr) + 1; k++) {
-			printf("%d ", arr1[k]);
+		if (debug > 0) {
+			for (k = 0; k < strlen(sr) + 1; k++) {
+				printf("%d ", arr1[k]);
+			}
+			printf("\n");
 		}
-		printf("\n");
 	}
 	return arr1[strlen(sr)];
 }
 
 int editDistanceEnd(char* sg, char* sr, unsigned *loc) {
-	unsigned mismatches = strlen(sg)-strlen(sr);
 	unsigned arr1[strlen(sr) + 1];
 	unsigned arr2[strlen(sr) + 1];
-	unsigned temp;
 	unsigned i;
 	unsigned j;
 	unsigned k;
@@ -114,7 +115,6 @@ int editDistanceBeginning(char* sg, char* sr, unsigned *loc){
 	char s1[strlen(sg)];
 	char s2[strlen(sr)];
 	unsigned k;
-	unsigned ed;
 	for (k = 0; k < strlen(sg) + 1; k++) {
 		s1[k] = sg[k];
 	}
@@ -126,6 +126,7 @@ int editDistanceBeginning(char* sg, char* sr, unsigned *loc){
 	return editDistanceEnd(s1, s2, loc);
 }
 
+#if 0
 int main() {
 	unsigned loc;
 	unsigned ed = editDistanceBeginning("ATGGA", "ATGA", &loc);
@@ -136,3 +137,4 @@ int main() {
 	printf("Edit Distance: %d, loc: %d\n", ed, loc);
 	return 0;
 }
+#endif

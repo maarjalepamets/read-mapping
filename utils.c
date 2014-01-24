@@ -7,9 +7,13 @@
  * Author: Maarja Lepamets
  */
 
+#define __UTILS_CPP__
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+const char *alphabet = "ACGTUacgtu";
 
 /* get the bit value of the nucleotide (two bits) */
 int getnuclvalue(char nucl)
@@ -23,11 +27,35 @@ int getnuclvalue(char nucl)
 	return (nucl & bit2) >> 1;
 }
 
+/* Get reverse complement of sequence given as string */
+/* Returns 1 if all nucleotides are OK, 0 if there are unrecognized symbols */
+/* Does not 0-terminate destination string */
+unsigned int getreversecomplementstr (char *dst, const char *seq, unsigned len)
+{
+	unsigned i, valid;
+	static char *rev = NULL;
+	if (!rev) {
+		rev = (char *) malloc (256);
+		for (i = 0; i < 256; i++) rev[i] = 'N';
+		rev['a'] = rev['A'] = 'T';
+		rev['c'] = rev['C'] = 'G';
+		rev['g'] = rev['G'] = 'C';
+		rev['t'] = rev['T'] = 'A';
+	}
+	valid = 1;
+	for (i = 0; i < len; i++) {
+		dst[i] = rev[(unsigned char) seq[len - 1 - i]];
+		if (dst[i] == 'N') valid = 0;
+	}
+	return valid;
+}
+
 /* get the value of the reverse complement of the given word */
 /* TODO: pole päris õige */
 unsigned long long getreversecomplement(unsigned long long w, unsigned length)
 {
-	int i, mask, v;
+	unsigned int i;
+	int mask, v;
 	unsigned long long revcompl = 0L;
 	w = ~w;
 	mask = 3;
@@ -40,6 +68,32 @@ unsigned long long getreversecomplement(unsigned long long w, unsigned length)
 	return revcompl;
 }
 
+char* word2string(unsigned w, int wordlength)
+{
+	char *sequence = (char *)malloc(wordlength + 1);
+	int i, temp;
+
+	for (i = 0; i < wordlength; ++i) {
+		temp = w & 3;
+		sequence[wordlength - i - 1] = alphabet[temp];
+		w >>= 2;
+	}
+	sequence[wordlength] = 0;
+	return sequence;
+}
+
+void word2bits(unsigned a)
+{
+	unsigned mask = (unsigned ) 1 << 31;
+	while (mask != 0) {
+		if ((mask & a) != 0)
+			putchar('1');
+		else putchar('0');
+		mask = mask >> 1;
+	}
+	printf("\n");
+}
+
 
 
  /* this implementation is based on:
@@ -48,15 +102,20 @@ unsigned long long getreversecomplement(unsigned long long w, unsigned length)
 	In-place MSD hybrid radix sort (with insertion sort) */
 
 /* used for small buckets */
-void insertionSort(unsigned *begin, unsigned *end)
+void insertionSort(unsigned *begin, unsigned *end, unsigned *beg_location)
 {
 	unsigned *p, *q;
-	unsigned temp;
+	unsigned temp, temp_loc;
 	for (p = begin + 1; p != end; ++p) {
 		for (q = p; q != begin && *q < *(q - 1); --q) {
 			temp = *q;
 			*q = *(q - 1);
 			*(q - 1) = temp;
+			if (beg_location) {
+				temp_loc = beg_location[q - begin];
+				beg_location[q - begin] = beg_location[q - begin - 1];
+				beg_location[q - begin - 1] = temp_loc;
+			}
 		}
 	}
 }
@@ -71,7 +130,7 @@ void hybridInPlaceRadixSort256(unsigned *begin, unsigned *end, unsigned *beg_loc
 	int i;
 
 	if (end - begin <= 32) {
-		insertionSort(begin, end);
+		insertionSort(begin, end, beg_location);
 		return;
 	}
 
@@ -91,25 +150,29 @@ void hybridInPlaceRadixSort256(unsigned *begin, unsigned *end, unsigned *beg_loc
 	}
 
 	/* swapping words and locations */
-	for (i = 0; i < end - begin; ++i)  {
+	for (i = 0; i < end - begin; )  {
 		p = begin + i;
 		digit = (*p >> shift) & 255;
+
 		if (bins[digit] <= binsize[digit]) {
-			++p;
+			++i;
 			continue;
 		}
 		position = positions[digit] + binsize[digit];
 		binsize[digit]++;
 		if (p == begin + position) {
-			++p;
+			++i;
 			continue;
 		}
 		temp = *p;
-		temp_location = beg_location[i];
 		*p = begin[position];
-		beg_location[i] = beg_location[position];
 		begin[position] = temp;
-		beg_location[position] = temp_location;
+
+		if (beg_location) {
+			temp_location = beg_location[i];
+			beg_location[i] = beg_location[position];
+			beg_location[position] = temp_location;
+		}
 
 	}
 
@@ -117,8 +180,13 @@ void hybridInPlaceRadixSort256(unsigned *begin, unsigned *end, unsigned *beg_loc
 	if (shift > 0) {
 		for (i = 0; i < 256; ++i) {
 			if (bins[i] > 1) {
-				hybridInPlaceRadixSort256(begin + positions[i],
-						begin + positions[i] + bins[i], beg_location + positions[i], shift - 8);
+				if (beg_location) {
+					hybridInPlaceRadixSort256(begin + positions[i],
+							begin + positions[i] + bins[i], beg_location + positions[i], shift - 8);
+				} else {
+					hybridInPlaceRadixSort256(begin + positions[i],
+							begin + positions[i] + bins[i], NULL, shift - 8);
+				}
 			}
 		}
 	}
