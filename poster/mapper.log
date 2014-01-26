@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2013.10.25)  26 JAN 2014 22:28
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2013.10.25)  26 JAN 2014 23:33
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -721,12 +721,12 @@ Missing character: There is no ; in font nullfont!
 <figures/radix.png, id=22, 639.38875pt x 449.68pt>
 File: figures/radix.png Graphic file (type png)
  <use figures/radix.png>
-Package pdftex.def Info: figures/radix.png used on input line 124.
+Package pdftex.def Info: figures/radix.png used on input line 121.
 (pdftex.def)             Requested size: 223.78941pt x 157.39035pt.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <9> on input line 124.
+(Font)              <9> on input line 121.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <6> on input line 124.
+(Font)              <6> on input line 121.
 Missing character: There is no ; in font nullfont!
 Missing character: There is no ; in font nullfont!
 Missing character: There is no ; in font nullfont!
@@ -734,28 +734,31 @@ Missing character: There is no ; in font nullfont!
 <figures/map.png, id=24, 495.0495pt x 169.1118pt>
 File: figures/map.png Graphic file (type png)
  <use figures/map.png>
-Package pdftex.def Info: figures/map.png used on input line 140.
+Package pdftex.def Info: figures/map.png used on input line 135.
 (pdftex.def)             Requested size: 247.52414pt x 84.55568pt.
 Missing character: There is no ; in font nullfont!
 Missing character: There is no ; in font nullfont!
 Missing character: There is no ; in font nullfont!
+Missing character: There is no ; in font nullfont!
+Missing character: There is no ; in font nullfont!
+Missing character: There is no ; in font nullfont!
 
-Underfull \hbox (badness 10000) in paragraph at lines 149--149
+Underfull \hbox (badness 10000) in paragraph at lines 148--148
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 149--149
+Underfull \hbox (badness 10000) in paragraph at lines 148--148
 []\T1/cmr/m/n/8 Duvanenko, V. J. (2009) In-place Hy-brid N-bit-Radix Sort.
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 149--149
+Underfull \hbox (badness 10000) in paragraph at lines 148--148
 \T1/cmr/m/n/8 http://www.drdobbs.com/architecture-and-design/algorithm-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 149--149
+Underfull \hbox (badness 10000) in paragraph at lines 148--148
 
  []
 
@@ -765,16 +768,16 @@ Missing character: There is no ; in font nullfont!
 <figures/ati.png, id=25, 137.51375pt x 137.51375pt>
 File: figures/ati.png Graphic file (type png)
  <use figures/ati.png>
-Package pdftex.def Info: figures/ati.png used on input line 160.
+Package pdftex.def Info: figures/ati.png used on input line 159.
 (pdftex.def)             Requested size: 48.13052pt x 48.13052pt.
 
 <figures/it.jpg, id=26, 301.125pt x 131.49126pt>
 File: figures/it.jpg Graphic file (type jpg)
  <use figures/it.jpg>
-Package pdftex.def Info: figures/it.jpg used on input line 160.
+Package pdftex.def Info: figures/it.jpg used on input line 159.
 (pdftex.def)             Requested size: 105.39532pt x 46.02261pt.
 
-Overfull \hbox (15.86111pt too wide) in paragraph at lines 160--160
+Overfull \hbox (15.86111pt too wide) in paragraph at lines 159--159
 [][] 
  []
 
@@ -787,10 +790,10 @@ Missing character: There is no ; in font nullfont!
 es/radix.png> <./figures/map.png> <./figures/ati.png> <./figures/it.jpg>]
 (./mapper.aux) ) 
 Here is how much of TeX's memory you used:
- 14380 strings out of 493307
- 278035 string characters out of 6139904
- 349870 words of memory out of 5000000
- 17508 multiletter control sequences out of 15000+600000
+ 14452 strings out of 493307
+ 279355 string characters out of 6139904
+ 351654 words of memory out of 5000000
+ 17580 multiletter control sequences out of 15000+600000
  24166 words of font info for 39 fonts, out of 8000000 for 9000
  957 hyphenation exceptions out of 8191
  63i,18n,92p,905b,1024s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -808,7 +811,7 @@ texmf/fonts/type1/public/cm-super/sfrm1000.pfb></usr/share/texmf/fonts/type1/pu
 blic/cm-super/sfrm1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfti10
 00.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfti1440.pfb></usr/share/t
 exlive/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb>
-Output written on mapper.pdf (1 page, 355294 bytes).
+Output written on mapper.pdf (1 page, 354317 bytes).
 PDF statistics:
  101 PDF objects out of 1000 (max. 8388607)
  56 compressed objects within 1 object stream

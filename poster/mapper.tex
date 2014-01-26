@@ -91,7 +91,7 @@ boxshade=plain
 }
 
 \headerbox{Indexing the Genome}{name=ind,column=0,below=intr} {
-The first step of mapping the sequencing reads is to index the full genome. For this we iterate over all chromosomes and extract each $n$-nucleotide ($n \le 16$) word together with its genomic location. Then we sort the words using a linear time in-place radix sort combined with insertion sort for small buckets (Duvanenko, 2009) and keep only one copy of each word and a pointer to the starting position of its genomic locations. The overall time-complexity of the algorithm is $O(n)$ and altogether it takes $4\ \times$ \textit{size of the genome} $+\ 8\ \times$ \textit{unique word in the genome} bytes.
+The first step of mapping the sequencing reads is to index the full genome. For this we iterate over all chromosomes and extract each $n$-nucleotide ($n \le 16$) word together with its genomic location. Then we sort the words using a linear time in-place radix sort combined with insertion sort for small buckets (Duvanenko, 2009) and keep only one copy of each word and a pointer to the starting position of its genomic locations. The overall time-complexity of the algorithm is $O(n)$ and altogether it takes $4\ \times$ \textit{size of the genome} $+\ 8\ \times$ \textit{unique word in the genome} bytes. The measurements of run-time on four different organisms and two different word lengths are given in Table 1.
 
 \begin{figure}[H]
 \begin{center}
@@ -99,9 +99,6 @@ The first step of mapping the sequencing reads is to index the full genome. For 
 \caption{\textbf{a)} Genome sequence; \textbf{b)} All extracted $n$-mers; \textbf{c)} $n$-mers sorted with in-place radix sort; \textbf{d)} Only one copy of each $n$-mer and the pointer to the array of locations (\textbf{e)}).}
 \end{center}
 \end{figure}
-
-\subsubsection*{The Evaluation}
-To evaluate the genome indexer we measured the time of creating indices for full genomes of four different organisms using two different word lengths (see Table 1). The time of writing a binary index file is excluded. We also noted the size of the index files but since we used no compressing the full human genome index took upto 20 GB for 16-nucleotide words and 11 GB for 10-nucleotide words.
 
 \begin{table}[H]
 \begin{center}
@@ -135,11 +132,13 @@ The mapping process consists of two parts. In the first part the read is cut int
 \end{center}
 \end{figure}
 
-We ran the mapping tool on a data-set with over 48,000 reads. We looked for genome locations where given reads would map with less than four errors. Tools run-time was approximately 30 seconds.
+}
+
+\headerbox{Validation}{name=res,column=1,below=map} {
 
 }
 
-\headerbox{References}{name=ref,column=1,below=map} {
+\headerbox{References}{name=ref,column=1,below=res} {
 
 \smaller % Reduce the font size in this block
 
