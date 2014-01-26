@@ -61,6 +61,7 @@ void combineindices(wordtable *table, wordtable *other);
  * writing binary .index file
  */
 void writetoindex(wordtable *table, const char *outputname, sequences seqinfo);
+void printhelp();
 
 int main (int argc, const char *argv[])
 {
@@ -87,6 +88,7 @@ int main (int argc, const char *argv[])
 		if (!strcmp(argv[i], "-i") || !strcmp(argv[i], "--input")) {
 			if (!argv[i + 1] || argv[i + 1][0] == '-') {
 				fprintf(stderr, "Error: No FastA file specified!\n");
+				printhelp();
 				exit(1);
 			}
 			/* get the locations of the input files */
@@ -114,9 +116,13 @@ int main (int argc, const char *argv[])
 			wordlen = strtol (argv[i + 1], &e, 10);
 			if (*e != 0) {
 				fprintf(stderr, "Invalid input: %s! Must be an integer.\n", argv[i + 1]);
+				printhelp();
 				exit(1);
 			}
 			++i;
+		} else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
+			printhelp();
+			exit(1);
 		} else {
 			fprintf(stderr, "Unknown argument: %s\n", argv[i]);
 			exit(1);
@@ -133,6 +139,7 @@ int main (int argc, const char *argv[])
 	}
 	if (inputbeg == -1) {
 		fprintf(stderr, "No input FastA files given!\n");
+		printhelp();
 		exit(1);
 	}
 
@@ -498,4 +505,13 @@ void writetoindex(wordtable *table, const char *outputname, sequences seqinfo)
 		fwrite(&table->locations[i], sizeof(table->locations[i]), 1, f);
 	}
 	return;
+}
+
+void printhelp()
+{
+	fprintf(stdout, "\n");
+	fprintf(stdout, "%s, %s\t%s\n", "-i", "--input", "FastA files");
+	fprintf(stdout, "%s, %s\t%s\n", "-o", "--outputname", "Name used in output files");
+	fprintf(stdout, "%s, %s\t%s\n", "-n", "--wordlength", "Length of the words in the index file");
+	fprintf(stdout, "\n");
 }

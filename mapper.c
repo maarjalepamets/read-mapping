@@ -26,6 +26,8 @@ const char* filemmap(const char *filename, struct stat *st);
 static void mapperwrapper(const char *queryfile, const char *index, info *h, int mmis, int d, Chromosome *chr, unsigned nchr);
 /* Return edit distance */
 static unsigned adjustmapping (unsigned queryidx, candidate *cand, const char *query, unsigned qlen, Chromosome *chr, unsigned int nchr, unsigned int nmm, unsigned *loc, char *s, char *q, unsigned reverse);
+void printhelp();
+
 
 int main (int argc, const char *argv[])
 {
@@ -46,6 +48,7 @@ int main (int argc, const char *argv[])
 		} else if (!strcmp(argv[i], "-i") || !strcmp(argv[i], "--input")) {
 			if (!argv[i + 1] || argv[i + 1][0] == '-') {
 				fprintf(stderr, "Error: No index file specified!\n");
+				printhelp();
 				exit(1);
 			}
 			indexfile = argv[i + 1];
@@ -53,6 +56,7 @@ int main (int argc, const char *argv[])
 		} else if (!strcmp(argv[i], "-q") || !strcmp(argv[i], "--query")) {
 			if (!argv[i + 1] || argv[i + 1][0] == '-') {
 				fprintf(stderr, "Error: No query file specified!\n");
+				printhelp();
 				exit(1);
 			}
 			queryfile = argv[i + 1];
@@ -60,6 +64,7 @@ int main (int argc, const char *argv[])
 		} else if (!strcmp(argv[i], "-g") || !strcmp(argv[i], "--genome")) {
 			if (!argv[i + 1] || argv[i + 1][0] == '-') {
 				fprintf(stderr, "Error: No genome (.names file) specified!\n");
+				printhelp();
 				exit(1);
 			}
 			namefile = argv[i + 1];
@@ -73,6 +78,7 @@ int main (int argc, const char *argv[])
 			mmis = strtol (argv[i + 1], &e, 10);
 			if (*e != 0) {
 				fprintf(stderr, "Invalid input: %s! Must be an integer.\n", argv[i + 1]);
+				printhelp();
 				exit(1);
 			}
 			++i;
@@ -85,11 +91,16 @@ int main (int argc, const char *argv[])
 			step = strtol (argv[i + 1], &e, 10);
 			if (*e != 0) {
 				fprintf(stderr, "Invalid input: %s! Must be an integer.\n", argv[i + 1]);
+				printhelp();
 				exit(1);
 			}
 			++i;
+		} else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
+			printhelp();
+			exit(1);
 		} else {
 			fprintf(stderr, "Unknown argument: %s\n", argv[i]);
+			printhelp();
 			exit(1);
 		}
 	}
@@ -97,6 +108,7 @@ int main (int argc, const char *argv[])
 	/* checking parameters */
 	if (!indexfile || !queryfile || !namefile) {
 		fprintf(stderr, "Error: Some of the input files are missing!\n");
+		printhelp();
 		exit(1);
 	}
 	if (mmis < 0 || mmis > 10) {
@@ -297,7 +309,7 @@ static unsigned adjustmapping (unsigned queryidx, candidate *cand, const char *q
 		fprintf (stderr, "Seq:   %s\n", s);
 	}
 	if (editdist <= nmm) {
-		fprintf (stderr, "%u\t%s\t%u\t%d\t%s\n", queryidx, chr[i].name, cand->loc -nmm + *qstart - chr[i].start, editdist, (reverse) ? "R" : "F");
+		fprintf (stdout, "%u\t%s\t%u\t%d\t%s\n", queryidx, chr[i].name, cand->loc -nmm + *qstart - chr[i].start, editdist, (reverse) ? "R" : "F");
 	}
 	return editdist;
 }
@@ -467,6 +479,17 @@ const char* filemmap(const char *filename, struct stat *st)
 	close(handle);
 
 	return data;
+}
+
+void printhelp()
+{
+	fprintf(stdout, "\n");
+	fprintf(stdout, "%s, %s\t%s\n", "-i", "--input", "Index file (output of the Indexer)");
+	fprintf(stdout, "%s, %s\t%s\n", "-g", "--genome", "Chromosome names file (output of the Indexer)");
+	fprintf(stdout, "%s, %s\t%s\n", "-q", "--query", "File containing the list of queries (newline delimited)");
+	fprintf(stdout, "%s, %s\t%s\n", "-mm", "--mismatches", "Number of allowed mismatches, default: 0");
+	fprintf(stdout, "%s, %s\t%s\n", "-step", " ", "Used for cutting queries into seeds, default: 5");
+	fprintf(stdout, "\n");
 }
 
 
