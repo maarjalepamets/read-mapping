@@ -1,8 +1,6 @@
 /*
  * Genome Mapper
  *
- * Text Algorithms, 2013/2014
- *
  * Authors: Maarja Lepamets, Fanny-Dhelia Pajuste
  */
 
@@ -22,18 +20,7 @@
 
 int debug = 0;
 
-typedef struct _chromosome {
-	char *name;
-	char *filename;
-	unsigned start;
-	unsigned length;
-	char *sequence;
-} Chromosome;
-
-int editDistanceMiddle (char* sg, char* sr);
-static int editDistanceBeginning (const char *query, const char *sequence, unsigned *qstart, char *s, char *q);
-
-
+static int editDistance(const char *query, const char *sequence, unsigned *qstart, char *s, char *q);
 void printindex(const char *data);
 const char* filemmap(const char *filename, struct stat *st);
 static void mapperwrapper(const char *queryfile, const char *index, info *h, int mmis, int d, Chromosome *chr, unsigned nchr);
@@ -47,7 +34,6 @@ int main (int argc, const char *argv[])
 	int step = 5;
 	const char *indexfile = NULL, *queryfile = NULL, *namefile = NULL;
 	struct stat stindex;
-	const char *outputname = "output";
 	const char *ind;
 	info *h;
 	Chromosome chr[256];
@@ -55,36 +41,50 @@ int main (int argc, const char *argv[])
 	const char *chrmap;
 
 	for (i = 1; i < argc; ++i) {
-		if (!strcmp(argv[i], "-d")) {
+		if (!strcmp(argv[i], "-d") || !strcmp(argv[i], "--debug")) {
 			debug += 1;
-		} else if (!strcmp(argv[i], "-i")) {
-			if (!argv[i + 1]) break;
+		} else if (!strcmp(argv[i], "-i") || !strcmp(argv[i], "--input")) {
+			if (!argv[i + 1] || argv[i + 1][0] == '-') {
+				fprintf(stderr, "Error: No index file specified!\n");
+				exit(1);
+			}
 			indexfile = argv[i + 1];
 			++i;
-		} else if (!strcmp(argv[i], "-q")) {
-			if (!argv[i + 1]) break;
+		} else if (!strcmp(argv[i], "-q") || !strcmp(argv[i], "--query")) {
+			if (!argv[i + 1] || argv[i + 1][0] == '-') {
+				fprintf(stderr, "Error: No query file specified!\n");
+				exit(1);
+			}
 			queryfile = argv[i + 1];
 			++i;
-		} else if (!strcmp(argv[i], "-g")) {
-			if (!argv[i + 1]) break;
+		} else if (!strcmp(argv[i], "-g") || !strcmp(argv[i], "--genome")) {
+			if (!argv[i + 1] || argv[i + 1][0] == '-') {
+				fprintf(stderr, "Error: No genome (.names file) specified!\n");
+				exit(1);
+			}
 			namefile = argv[i + 1];
 			++i;
-		} else if (!strcmp(argv[i], "-o")) {
-			outputname = argv[i + 1];
-			++i;
-		} else if (!strcmp(argv[i], "-mm")) {
+		} else if (!strcmp(argv[i], "-mm") || !strcmp(argv[i], "--mismatches")) {
+			if (!argv[i + 1]) {
+				fprintf(stderr, "Warning: No number of mismatches specified! Using the default value: %d.\n", mmis);
+				break;
+			}
 			char *e;
 			mmis = strtol (argv[i + 1], &e, 10);
 			if (*e != 0) {
-				fprintf(stderr, "Invalid input: %s!\n", argv[i + 1]);
+				fprintf(stderr, "Invalid input: %s! Must be an integer.\n", argv[i + 1]);
 				exit(1);
 			}
 			++i;
 		} else if (!strcmp(argv[i], "-step")) {
+			if (!argv[i + 1]) {
+				fprintf(stderr, "Warning: No step length specified! Using the default value: %d.\n", step);
+				break;
+			}
 			char *e;
 			step = strtol (argv[i + 1], &e, 10);
 			if (*e != 0) {
-				fprintf(stderr, "Invalid input: %s!\n", argv[i + 1]);
+				fprintf(stderr, "Invalid input: %s! Must be an integer.\n", argv[i + 1]);
 				exit(1);
 			}
 			++i;
@@ -95,16 +95,16 @@ int main (int argc, const char *argv[])
 	}
 
 	/* checking parameters */
-	if (!indexfile || !queryfile) {
-		fprintf(stderr, "Some input is missing!\n");
+	if (!indexfile || !queryfile || !namefile) {
+		fprintf(stderr, "Error: Some of the input files are missing!\n");
 		exit(1);
 	}
-	if (mmis < 0 || step < 1) {
-		fprintf(stderr, "Number of mismatches and d both must be positive!\n");
+	if (mmis < 0 || mmis > 10) {
+		fprintf(stderr, "Error: Number of mismatches must be between 0 and 10!\n");
 		exit(1);
 	}
-	if (mmis > 0 && !namefile) {
-		fprintf(stderr, "Genome files are needed for mapping with mismatches!\n");
+	if (step < 1 || step > 10) {
+		fprintf(stderr, "Error: Step length must be between 1 and 10!\n");
 		exit(1);
 	}
 
@@ -142,7 +142,7 @@ int main (int argc, const char *argv[])
 			while ((s < stindex.st_size) && (chrmap[s] <= ' ')) s += 1;
 		}
 	}
-	
+
 	ind = filemmap(indexfile, &stindex);
 	h = (info *) ind;
 
@@ -151,8 +151,7 @@ int main (int argc, const char *argv[])
 	return 0;
 }
 
-static void
-mapperwrapper(const char *queryfile, const char *index, info *h, int mmis, int d, Chromosome *chr, unsigned nchr)
+static void mapperwrapper(const char *queryfile, const char *index, info *h, int mmis, int d, Chromosome *chr, unsigned nchr)
 {
 	unsigned int j;
 	unsigned *words, *starts, *locations;
@@ -162,7 +161,6 @@ mapperwrapper(const char *queryfile, const char *index, info *h, int mmis, int d
 	unsigned queryidx;
 
 	char readfw[MAX_READ_LENGTH];
-	/* char readrv[MAX_READ_LENGTH]; */
 	FILE *q;
 
 	unsigned *seeds = NULL;
@@ -215,7 +213,7 @@ mapperwrapper(const char *queryfile, const char *index, info *h, int mmis, int d
 				char s[256], q[256];
 				unsigned qstart = 0;
 				adjustmapping (queryidx, &qb.candidates[j], qb.query, len, chr, nchr, mmis, &qstart, s, q, 0);
-			} 
+			}
 			/* Reverse complement */
 			getreversecomplementstr (r, readfw, len);
 			r[len] = 0;
@@ -239,7 +237,7 @@ mapperwrapper(const char *queryfile, const char *index, info *h, int mmis, int d
 				char s[256], q[256];
 				unsigned qstart = 0;
 				adjustmapping (queryidx, &qb.candidates[j], qb.query, len, chr, nchr, mmis, &qstart, s, q, 1);
-			} 
+			}
 			memset(readfw, 0, sizeof(readfw));
 			memset(qb.candidates, 0, MAX_CANDIDATES * sizeof(candidate));
 		}
@@ -248,8 +246,7 @@ mapperwrapper(const char *queryfile, const char *index, info *h, int mmis, int d
 
 }
 
-static unsigned
-adjustmapping (unsigned queryidx, candidate *cand, const char *query, unsigned qlen, Chromosome *chr, unsigned int nchr, unsigned int nmm, unsigned *qstart, char *s, char *q, unsigned reverse)
+static unsigned adjustmapping (unsigned queryidx, candidate *cand, const char *query, unsigned qlen, Chromosome *chr, unsigned int nchr, unsigned int nmm, unsigned *qstart, char *s, char *q, unsigned reverse)
 {
 	unsigned i, editdist;
 	unsigned sloc, slen;
@@ -288,7 +285,7 @@ adjustmapping (unsigned queryidx, candidate *cand, const char *query, unsigned q
 	seq[slen] = 0;
 	/* editdist = editDistanceMiddle (q, s); */
 	*qstart = nmm;
-	editdist = editDistanceBeginning (query, seq, qstart, s, q);
+	editdist = editDistance (query, seq, qstart, s, q);
 	if (debug > 0) {
 		fprintf (stderr, "Location %u Distance %u Query start %u\n", cand->loc, editdist, *qstart);
 		fprintf (stderr, "Query: %s\n", q);
@@ -302,22 +299,22 @@ adjustmapping (unsigned queryidx, candidate *cand, const char *query, unsigned q
 
 /* fixme: Update qstart */
 
-static int
-editDistanceBeginning (const char *query, const char *seq, unsigned *qstart, char *s, char *q)
+static int editDistance (const char *query, const char *seq, unsigned *qstart, char *s, char *q)
 {
 	static int *d = NULL;
 	static int dsize = 0;
 	int qlen, slen, qi, si, dist, lasts;
 	qlen = strlen (query);
 	slen = strlen (seq);
-	if (debug > 2) fprintf (stderr, "editDistanceBeginning: Query %s (len = %d), sequence %s (len = %d)\n", query, qlen, seq, slen);
+	if (debug > 2) fprintf (stderr, "editDistance: Query %s (len = %d), sequence %s (len = %d)\n", query, qlen, seq, slen);
 	if ((qlen + 1) * (slen + 1) > dsize) {
 		dsize = (qlen + 1) * (slen + 1);
 		d = (int *) realloc (d, dsize * sizeof (int));
 	}
 	/* Fill first column */
 	for (si = 0; si <= slen; si++) {
-		d[si * (qlen + 1) + 0] = (si < (int) *qstart) ? *qstart - si : si - *qstart;
+		/*d[si * (qlen + 1) + 0] = (si < (int) *qstart) ? *qstart - si : si - *qstart;*/
+		d[si * (qlen + 1) + 0] = (si < (int) 2 * *qstart) ? 0 : si - 2 * *qstart;
 	}
 	/* Fill first row */
 	for (qi = 1; qi <= qlen; qi++) {

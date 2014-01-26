@@ -2,9 +2,7 @@
  * Genome Indexer
  * (using radix sort)
  *
- * Text Algorithms, 2013/2014
- *
- * Author: Maarja Lepamets
+ * Authors: Maarja Lepamets, Fanny-Dhelia Pajuste
  */
 
 #ifndef INDEXCREATER_H_
@@ -64,9 +62,17 @@ typedef struct _queryblock {
 	unsigned ncandidates;
 } queryblock;
 
+typedef struct _chromosome {
+	char *name;
+	char *filename;
+	unsigned start;
+	unsigned length;
+	char *sequence;
+} Chromosome;
 
-
-
+/*
+ * functions are defined and commented in utils.c
+ */
 int getnuclvalue(char nucl);
 unsigned int getreversecomplementstr (char *dst, const char *seq, unsigned len);
 

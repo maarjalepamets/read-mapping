@@ -1,8 +1,6 @@
 /*
  * Genome Mapper
  *
- * Text Algorithms, 2013/2014
- *
  * Authors: Maarja Lepamets, Fanny-Dhelia Pajuste
  */
 
@@ -142,7 +140,8 @@ u32 find_candidates (queryblock *qb, u32 *words, u32 nwords, u32 *starts, u32 *l
 			if (seeds[i] == nwords) continue;
 			if (pos[i] < end[i]) {
 				u32 l = loc (i, locations, pos, m);
-				if (l == minloc) {
+				int delta = (long long) l - (long long) minloc;
+				if ((delta >= -(int) mmis) && (delta <= (int) mmis)) {
 					int sloc;
 					/* This seed confirms given location */
 					nfound += 1;

@@ -2,9 +2,7 @@
  * Genome Indexer
  * (using radix sort)
  *
- * Text Algorithms, 2013/2014
- *
- * Author: Maarja Lepamets
+ * Authors: Maarja Lepamets, Fanny-Dhelia Pajuste
  */
 
 #define __UTILS_CPP__
@@ -27,9 +25,10 @@ int getnuclvalue(char nucl)
 	return (nucl & bit2) >> 1;
 }
 
-/* Get reverse complement of sequence given as string */
-/* Returns 1 if all nucleotides are OK, 0 if there are unrecognized symbols */
-/* Does not 0-terminate destination string */
+/* Get reverse complement of sequence given as string
+ * Returns 1 if all nucleotides are OK, 0 if there are unrecognized symbols
+ * Does not 0-terminate destination string
+ */
 unsigned int getreversecomplementstr (char *dst, const char *seq, unsigned len)
 {
 	unsigned i, valid;
@@ -50,24 +49,6 @@ unsigned int getreversecomplementstr (char *dst, const char *seq, unsigned len)
 	return valid;
 }
 
-/* get the value of the reverse complement of the given word */
-/* TODO: pole päris õige */
-unsigned long long getreversecomplement(unsigned long long w, unsigned length)
-{
-	unsigned int i;
-	int mask, v;
-	unsigned long long revcompl = 0L;
-	w = ~w;
-	mask = 3;
-	for (i = 0; i < length; ++i) {
-		v = w & mask;
-		revcompl <<= 2;
-		revcompl |= v;
-		w >>= 2;
-	}
-	return revcompl;
-}
-
 char* word2string(unsigned w, int wordlength)
 {
 	char *sequence = (char *)malloc(wordlength + 1);
@@ -82,6 +63,9 @@ char* word2string(unsigned w, int wordlength)
 	return sequence;
 }
 
+/*
+ * for debugging
+ */
 void word2bits(unsigned a)
 {
 	unsigned mask = (unsigned ) 1 << 31;

@@ -2,9 +2,7 @@
  * Genome Indexer
  * (using radix sort)
  *
- * Text Algorithms, 2013/2014
- *
- * Author: Maarja Lepamets
+ * Authors: Maarja Lepamets, Fanny-Dhelia Pajuste
  */
 
 #include <stdio.h>
@@ -21,41 +19,55 @@
 
 int debug = 0;
 
-/* reading in the genome in FastA format */
-/* if name is not NULL it will be assigned a copy of sequence name */
+/*
+ * reading in the genome in FastA format
+ * if name is not NULL it will be assigned a copy of sequence name
+ */
 unsigned readfastafile(const char *filename, wordtable *table, unsigned loc, char **name);
 
-/* fills the table with words and their locations */
-/* if name is not NULL it will be assigned a copy of sequence name */
+/*
+ * fills the table with words and their locations
+ * if name is not NULL it will be assigned a copy of sequence name
+ */
 unsigned fillwordtable(const char *data, wordtable *table, struct stat st, unsigned loc, char **name);
 
-/* mask has as many 1's as the wordlength is */
+/*
+ * mask has as many 1's as the wordlength is
+ */
 unsigned createmask(int wordlength);
 
 /* wrapper for in-place radix sort */
 void sortwords(wordtable *table);
 
-/* */
+/*
+ * find the number of unique words
+ */
 unsigned countunique(wordtable *table);
 
-/* */
+/*
+ * find the starting position for the locations of all the words
+ * from the array of all locations
+ */
 void findstartpositions(wordtable *table);
 
-/* */
 void sortlocations(wordtable *table);
 
-/* for combining two sorted lists of words (with locations) */
+/*
+ * for combining two sorted lists of words (with locations)
+ */
 void combineindices(wordtable *table, wordtable *other);
 
-/* */
+/*
+ * writing binary .index file
+ */
 void writetoindex(wordtable *table, const char *outputname, sequences seqinfo);
 
 int main (int argc, const char *argv[])
 {
-	int wordlen;
+	int wordlen = 10;
 	int i, inputbeg = -1, inputend = -1;
 	unsigned location;
-	const char *outputname;
+	const char *outputname = "output";
 	sequences seqinfo;
 	wordtable tables[2];
 	wordtable *table = &tables[0];
@@ -72,25 +84,36 @@ int main (int argc, const char *argv[])
 
 	/* parsing commandline arguments */
 	for (i = 1; i < argc; ++i) {
-		if (!strcmp(argv[i], "-i")) {
-			
-			if (!argv[i + 1]) break;
+		if (!strcmp(argv[i], "-i") || !strcmp(argv[i], "--input")) {
+			if (!argv[i + 1] || argv[i + 1][0] == '-') {
+				fprintf(stderr, "Error: No FastA file specified!\n");
+				exit(1);
+			}
 			/* get the locations of the input files */
 			inputbeg = ++i;
 			while (i < argc - 1 && argv[i + 1][0] != '-') {
 				++i;
 			}
 			inputend = i;
-		} else if (!strcmp(argv[i], "-d")) {
+		} else if (!strcmp(argv[i], "-d") || !strcmp(argv[i], "--debug")) {
 			debug += 1;
-		} else if (!strcmp(argv[i], "-o")) {
+		} else if (!strcmp(argv[i], "-o") || !strcmp(argv[i], "--outputname")) {
+			if (!argv[i + 1] || argv[i + 1][0] == '-') {
+				fprintf(stderr, "Warning: No output name specified!\n");
+				++i;
+				continue;
+			}
 			outputname = argv[i + 1];
 			++i;
-		} else if (!strcmp(argv[i], "-n")) {
+		} else if (!strcmp(argv[i], "-n") || !strcmp(argv[i], "--wordlength")) {
+			if (!argv[i + 1]) {
+				fprintf(stderr, "Warning: No word-length specified! Using the default value: %d.\n", wordlen);
+				break;
+			}
 			char *e;
 			wordlen = strtol (argv[i + 1], &e, 10);
 			if (*e != 0) {
-				fprintf(stderr, "Invalid input: %s!\n", argv[i + 1]);
+				fprintf(stderr, "Invalid input: %s! Must be an integer.\n", argv[i + 1]);
 				exit(1);
 			}
 			++i;
@@ -104,9 +127,12 @@ int main (int argc, const char *argv[])
 	if (wordlen > 16) {
 		fprintf(stderr, "Seed size too large!\n");
 		exit(1);
+	} else if (wordlen < 1) {
+		fprintf(stderr, "Error: Invalid word-length: %d! Must be between 1 and 16.\n", wordlen);
+		exit(1);
 	}
 	if (inputbeg == -1) {
-		fprintf(stderr, "No input files given!\n");
+		fprintf(stderr, "No input FastA files given!\n");
 		exit(1);
 	}
 
@@ -153,7 +179,7 @@ int main (int argc, const char *argv[])
 	}
 	fclose (ofs);
 
-	if (debug) {
+	if (debug > 1) {
 		unsigned int i, j;
 		for (i = 0; i < table->nwords - 1; ++i) {
 			printf("järjestus %s, start %u\n", word2string(table->words[i], table->wordlength), table->starts[i]);
@@ -294,7 +320,7 @@ void sortwords(wordtable *table)
 	if (table->nwords == 0) return;
 
 	/* calculate the number of shifted positions for making radix sort faster (no need to sort digits that are all zeros)*/
-	for (i = 8; i < table->wordlength * 2; i+= 8) firstshift += 8;
+	for (i = 8; i < table->wordlength * 2; i += 8) firstshift += 8;
 
 	hybridInPlaceRadixSort256(table->words, table->words + table->nwords, table->locations, firstshift);
 

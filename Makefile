@@ -13,16 +13,15 @@ INDEXER_SOURCES = \
 MAPPER_SOURCES = \
         mapper.c \
         utils.c \
-        mappermethods.c \
-        matcher.c
+        mappermethods.c 
 
 RELEASEFLAGS = -O3
 DEBUGFLAGS = -O0 -g
 LIBS = -lm
 INCS = -I.
 BINS  = indexer mapper
-CXXFLAGS = $(INCS) $(DEBUGFLAGS) -D "VERSION=\"${VERSION}\"" -Wall
-#CXXFLAGS = $(INCS) $(RELEASEFLAGS) -D "VERSION=\"${VERSION}\"" -Wall
+#CXXFLAGS = $(INCS) $(DEBUGFLAGS) -D "VERSION=\"${VERSION}\"" -Wall
+CXXFLAGS = $(INCS) $(RELEASEFLAGS) -D "VERSION=\"${VERSION}\"" -Wall
 
 .PHONY: all all-before all-after clean clean-custom
 
