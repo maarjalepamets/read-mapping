@@ -191,6 +191,7 @@ static void mapperwrapper(const char *queryfile, const char *index, info *h, int
 		}
 		if (len > 0) {
 			char r[256];
+			unsigned nmatched;
 			if (debug > 1) fprintf (stderr, "Query: %s\n", readfw);
 
 			qb.query = readfw;
@@ -209,10 +210,12 @@ static void mapperwrapper(const char *queryfile, const char *index, info *h, int
 					}
 				}
 			}
+			nmatched = 0;
 			for (j = 0; j < ncandidates; j++) {
 				char s[256], q[256];
-				unsigned qstart = 0;
-				adjustmapping (queryidx, &qb.candidates[j], qb.query, len, chr, nchr, mmis, &qstart, s, q, 0);
+				unsigned qstart = 0, editdist;
+				editdist = adjustmapping (queryidx, &qb.candidates[j], qb.query, len, chr, nchr, mmis, &qstart, s, q, 0);
+				if (editdist <= mmis) nmatched += 1;
 			}
 			/* Reverse complement */
 			getreversecomplementstr (r, readfw, len);
@@ -235,9 +238,11 @@ static void mapperwrapper(const char *queryfile, const char *index, info *h, int
 			}
 			for (j = 0; j < ncandidates; j++) {
 				char s[256], q[256];
-				unsigned qstart = 0;
-				adjustmapping (queryidx, &qb.candidates[j], qb.query, len, chr, nchr, mmis, &qstart, s, q, 1);
+				unsigned qstart = 0, editdist;
+				editdist = adjustmapping (queryidx, &qb.candidates[j], qb.query, len, chr, nchr, mmis, &qstart, s, q, 1);
+				if (editdist <= mmis) nmatched += 1;
 			}
+			if (!nmatched) fprintf (stderr, "%d\t-\n", queryidx);
 			memset(readfw, 0, sizeof(readfw));
 			memset(qb.candidates, 0, MAX_CANDIDATES * sizeof(candidate));
 		}
@@ -358,7 +363,7 @@ static int editDistance (const char *query, const char *seq, unsigned *qstart, c
 			s[sp++] = seq[si--];
 			q[qp++] = '-';
 		}
-		while ((qi > 0) || (si > 0)) {
+		while ((qi >= 0) || (si >= 0)) {
 			unsigned dl, dtl, dt;
 			dl = (qi > 0) ? d[si * (qlen + 1) + qi - 1] : 99;
 			dtl = ((qi > 0) && (si > 0)) ? d[(si - 1) * (qlen + 1) + qi - 1] : 99;
@@ -366,15 +371,21 @@ static int editDistance (const char *query, const char *seq, unsigned *qstart, c
 			if (qi < 0) {
 				/* End of query */
 				s[sp++] = seq[si--];
-				q[qp++] = ' ';
+				q[qp++] = '-';
 			} else if (si < 0) {
 				/* End of sequence */
-				s[sp++] = ' ';
+				s[sp++] = '-';
+				q[qp++] = query[qi--];
+			} else if (qi == 0) {
+				s[sp++] = seq[si--];
 				q[qp++] = query[qi--];
 			} else if ((dtl <= dl) && (dtl <= dt)) {
 				/* Match or ungapped mismatch */
 				s[sp++] = seq[si--];
 				q[qp++] = query[qi--];
+			} else if (si == 0) {
+				s[sp++] = seq[si--];
+				q[qp++] = '-';
 			} else if ((dl <= dtl) && (dl <= dt)) {
 				/* Gap in sequence */
 				s[sp++] = '-';
